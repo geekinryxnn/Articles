@@ -61,3 +61,6 @@ def seed_database():
     
     conn.commit()
     conn.close()
+
+def test_example():
+    assert 1 + 1 == 2
