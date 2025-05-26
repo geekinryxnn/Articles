@@ -1,8 +1,9 @@
+# scripts/setup_db.py
 import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from lib.database.connection import get_connection
+from lib.db.connection import get_connection
 
 def setup_database():
     conn = get_connection()

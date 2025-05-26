@@ -3,9 +3,9 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from lib.database.seed import seed_database
-from lib.models.author import Author
-from lib.models.magazine import Magazine
-from lib.models.article import Article
+from .models import Author
+from .models.magazine import Magazine
+from .models import Article
 
 def display_data():
     print("\n=== Current Database State ===")
