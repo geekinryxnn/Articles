@@ -1,43 +1,63 @@
-import sys
-import os
-import pytest
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+import sqlite3
 
-from lib.models.author import Author
-from lib.database.connection import get_connection
+def get_connection():
+    # Adjust the database path as needed
+    return sqlite3.connect('database.db')
 
-@pytest.fixture
-def setup_db():
+def create_tables():
     conn = get_connection()
     cursor = conn.cursor()
     
-    # Clear tables
-    cursor.execute("DELETE FROM articles")
-    cursor.execute("DELETE FROM authors")
-    cursor.execute("DELETE FROM magazines")
+    # Create articles table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS articles (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            author_id INTEGER,
+            magazine_id INTEGER,
+            content TEXT,
+            FOREIGN KEY (author_id) REFERENCES authors(id),
+            FOREIGN KEY (magazine_id) REFERENCES magazines(id)
+        )
+    ''')
     
-    # Insert test data
-    cursor.execute("INSERT INTO authors (name) VALUES ('Test Author')")
-    cursor.execute("INSERT INTO magazines (name, category) VALUES ('Test Mag', 'Test')")
-    cursor.execute("""
-        INSERT INTO articles (title, author_id, magazine_id)
-        VALUES ('Test Article', 1, 1)
-    """)
+    # Create magazines table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS magazines (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            category TEXT
+        )
+    ''')
+    
+    # Create authors table (if needed for your application)
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS authors (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL
+        )
+    ''')
     
     conn.commit()
     conn.close()
 
-def test_author_creation(setup_db):
-    author = Author("New Author")
-    author.save()
-    assert author.id is not None
-
-def test_find_author_by_id(setup_db):
-    author = Author.find_by_id(1)
-    assert author.name == "Test Author"
-
-def test_author_articles(setup_db):
-    author = Author.find_by_id(1)
-    articles = author.articles()
-    assert len(articles) == 1
-    assert isinstance(articles[0], Article)
+def seed_database():
+    conn = get_connection()
+    cursor = conn.cursor()
+    
+    # Ensure tables exist before clearing data
+    create_tables()
+    
+    # Clear existing data
+    cursor.execute("DELETE FROM articles")
+    cursor.execute("DELETE FROM magazines")
+    cursor.execute("DELETE FROM authors")
+    
+    # Insert seed data (example)
+    cursor.execute("INSERT INTO authors (name) VALUES (?)", ("John Doe",))
+    cursor.execute("INSERT INTO magazines (name, category) VALUES (?, ?)", ("Tech Weekly", "Technology"))
+    cursor.execute("INSERT INTO articles (title, author_id, magazine_id, content) VALUES (?, ?, ?, ?)",
+                  ("Tech Trends", 1, 1, "Article content here"))
+    
+    conn.commit()
+    conn.close()

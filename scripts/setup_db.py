@@ -1,21 +1,14 @@
 # scripts/setup_db.py
-import sys
-import os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-from lib.db.connection import get_connection
+import sqlite3
+from lib.database.connection import get_connection
 
 def setup_database():
     conn = get_connection()
-    cursor = conn.cursor()
-    
-    with open('lib/db/schema.sql') as f:
-        schema = f.read()
-    
-    cursor.executescript(schema)
+    with open('lib/db/schema.sql', 'r') as f:
+        conn.executescript(f.read())
     conn.commit()
     conn.close()
+    print("Database setup complete")
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     setup_database()
-    print("Database tables created successfully!")
